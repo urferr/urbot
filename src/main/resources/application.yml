@@ -1,5 +1,9 @@
 server:
   port: 8080
+  servlet:
+    session:
+      cookie:
+        name: URBOT_SESSION
 
 vaadin:
   close-idle-sessions: false
