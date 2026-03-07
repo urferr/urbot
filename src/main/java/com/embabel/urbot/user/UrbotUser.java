@@ -2,6 +2,7 @@ package com.embabel.urbot.user;
 
 import com.embabel.agent.api.identity.User;
 import com.embabel.agent.api.reference.LlmReference;
+import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.filter.PropertyFilter;
 import com.embabel.agent.rag.model.NamedEntity;
 import com.embabel.agent.rag.model.NamedEntityData;
@@ -12,6 +13,7 @@ import com.embabel.urbot.rag.DocumentService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -116,7 +118,7 @@ public class UrbotUser implements User, NamedEntity, Person {
     }
 
     @NotNull
-    public LlmReference personalDocs(SearchOperations searchOperations) {
+    private LlmReference personalDocs(SearchOperations searchOperations) {
         return new ToolishRag(
                 "user_docs",
                 "User's own documents",
@@ -127,5 +129,21 @@ public class UrbotUser implements User, NamedEntity, Person {
                                 effectiveContext()
                         )
                 ).withUnfolding();
+    }
+
+    /**
+     * Tools for this user
+     */
+    public @NotNull List<Tool> tools() {
+        return List.of();
+    }
+
+    /**
+     * References for this user
+     */
+    public @NotNull List<LlmReference> references(SearchOperations searchOperations) {
+        return List.of(
+                personalDocs(searchOperations)
+        );
     }
 }

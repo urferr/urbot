@@ -7,15 +7,12 @@ import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.rag.service.SearchOperations;
-import com.embabel.chat.Conversation;
-import com.embabel.chat.SimpleMessageFormatter;
-import com.embabel.chat.UserMessage;
-import com.embabel.chat.WindowingConversationFormatter;
+import com.embabel.chat.*;
 import com.embabel.common.core.types.Named;
 import com.embabel.dice.agent.Memory;
+import com.embabel.dice.common.ConversationAnalysisRequestEvent;
 import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
-import com.embabel.dice.common.ConversationAnalysisRequestEvent;
 import com.embabel.urbot.user.UrbotUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,10 +88,8 @@ public class ChatActions {
                 SimpleMessageFormatter.INSTANCE
         ).format(conversation.last(properties.chat().messagesToEmbed()));
 
-        var tools = new LinkedList<>(globalTools);
-
         var references = new LinkedList<>(globalReferences);
-        references.add(user.personalDocs(searchOperations));
+        references.addAll(user.references(searchOperations));
         if (properties.memory().getEnabled()) {
             references.add(Memory.forContext(user.currentContext())
                     .withRepository(propositionRepository)
@@ -102,17 +97,24 @@ public class ChatActions {
                     .withEagerSearchAbout(recentContext, properties.chat().memoryEagerLimit()));
         }
 
-        var assistantMessage = context.
-                ai()
-                .withLlm(properties.chat().llm())
-                .withId("chat_response")
-                .withTools(tools)
-                .withReferences(references)
-                .rendering("urbot")
-                .respondWithSystemPrompt(conversation, Map.of(
-                        "properties", properties,
-                        "user", user
-                ));
+        Message assistantMessage;
+        try {
+            assistantMessage = context.
+                    ai()
+                    .withLlm(properties.chat().llm())
+                    .withId("chat_response")
+                    .withTools(globalTools)
+                    .withTools(user.tools())
+                    .withReferences(references)
+                    .rendering("urbot")
+                    .respondWithSystemPrompt(conversation, Map.of(
+                            "properties", properties,
+                            "user", user
+                    ));
+        } catch (Exception e) {
+            logger.error("Error generating assistant response", e);
+            assistantMessage = new AssistantMessage("Sorry, I encountered an error: " + e.getMessage());
+        }
         context.sendMessage(conversation.addMessage(assistantMessage));
 
         if (properties.memory().getEnabled()) {
