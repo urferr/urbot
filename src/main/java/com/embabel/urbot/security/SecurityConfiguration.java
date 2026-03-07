@@ -5,7 +5,6 @@ import com.embabel.urbot.user.DummyUrbotUserService;
 import com.embabel.urbot.user.UrbotUser;
 import com.embabel.urbot.user.UrbotUserService;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
-import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -29,20 +28,12 @@ class SecurityConfiguration extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.FORWARD).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
         );
         super.configure(http);
         setLoginView(http, LoginView.class);
 
         http.userDetailsService(userService);
-
-        // Permit WebSocket upgrade requests used by Vaadin Push (Atmosphere)
-        http.csrf(csrf -> csrf
-                .ignoringRequestMatchers(request ->
-                        "websocket".equalsIgnoreCase(request.getHeader("Upgrade"))
-                )
-        );
 
         // Configure logout
         http.logout(logout -> logout
