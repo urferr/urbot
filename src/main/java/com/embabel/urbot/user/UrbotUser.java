@@ -4,6 +4,7 @@ import com.embabel.agent.api.identity.User;
 import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.agent.filter.PropertyFilter;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.embabel.agent.rag.model.NamedEntityData;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.domain.common.Person;
@@ -105,7 +106,7 @@ public class UrbotUser implements User, NamedEntity, Person {
     @NotNull
     @Override
     public Set<String> labels() {
-        return Set.of("UrbotUser");
+        return Set.of(NamedEntityData.ENTITY_LABEL, "User", getClass().getSimpleName());
     }
 
     @NotNull
