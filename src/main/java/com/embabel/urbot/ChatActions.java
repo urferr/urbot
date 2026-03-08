@@ -97,24 +97,21 @@ public class ChatActions {
                     .withEagerSearchAbout(recentContext, properties.chat().memoryEagerLimit()));
         }
 
-        Message assistantMessage;
-        try {
-            assistantMessage = context.
-                    ai()
-                    .withLlm(properties.chat().llm())
-                    .withId("chat_response")
-                    .withTools(globalTools)
-                    .withTools(user.tools())
-                    .withReferences(references)
-                    .rendering("urbot")
-                    .respondWithSystemPrompt(conversation, Map.of(
-                            "properties", properties,
-                            "user", user
-                    ));
-        } catch (Exception e) {
-            logger.error("Error generating assistant response", e);
-            assistantMessage = new AssistantMessage("Sorry, I encountered an error: " + e.getMessage());
-        }
+        var assistantMessage = context.
+                ai()
+                .withLlm(properties.chat().llm())
+                .withId("chat_response")
+                .withTools(globalTools)
+                .withTools(user.tools())
+                .withReferences(references)
+                .rendering("urbot")
+                .respond(
+                        conversation,
+                        Map.of(
+                                "properties", properties,
+                                "user", user
+                        ),
+                        ex -> new AssistantMessage("Sorry, something went wrong"));
         context.sendMessage(conversation.addMessage(assistantMessage));
 
         if (properties.memory().getEnabled()) {
