@@ -372,7 +372,7 @@ The [`astrid`](https://github.com/embabel/urbot/tree/astrid) branch demonstrates
 
 ```bash
 git checkout astrid
-mvn spring-boot:run -Dspring-boot.run.profiles=astrid
+./mvnw spring-boot:run -Dspring-boot.run.profiles=astrid
 ```
 
 The astrid branch adds:
@@ -406,7 +406,7 @@ Without the `Pet` interface, DICE would still extract the proposition but wouldn
 3. Add domain interfaces extending `NamedEntity` for entity types you want extracted
 4. Add `application-<yourbot>.properties` with `urbot.bot-packages=com.embabel.bot.<yourbot>` and your persona/objective names
 5. Add Jinja templates under `prompts/personas/` and `prompts/objectives/`
-6. Run with `mvn spring-boot:run -Dspring-boot.run.profiles=<yourbot>`
+6. Run with `./mvnw spring-boot:run -Dspring-boot.run.profiles=<yourbot>`
 
 See [`src/main/java/com/embabel/bot/README.md`](src/main/java/com/embabel/bot/README.md) for the full extension reference.
 
@@ -478,7 +478,6 @@ docker-compose.yml                      # Neo4j + optional profile-specific serv
 ### Prerequisites
 
 - Java 21+
-- Maven 3.9+
 - Docker (for Neo4j)
 - An OpenAI or Anthropic API key
 - (Optional) A [Brave Search API key](https://brave.com/search/api/) for web search via MCP
@@ -496,13 +495,13 @@ export OPENAI_API_KEY=sk-...    # or ANTHROPIC_API_KEY for Claude
 export BRAVE_API_KEY=BSA...
 
 # Start the application (default generic document Q&A assistant)
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 To run with a custom chatbot profile instead:
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=astrid
+./mvnw spring-boot:run -Dspring-boot.run.profiles=astrid
 ```
 
 ### AOT / Project Leyden Build (Fast Startup)
@@ -514,7 +513,7 @@ Urbot supports [Project Leyden](https://openjdk.org/projects/leyden/) AOT class 
 ```
 
 This script does the following:
-1. Builds the fat JAR with `mvn -DskipTests package`
+1. Builds the fat JAR with `./mvnw -DskipTests package`
 2. Extracts the JAR into layered form under `extracted/`
 3. Does a dry-run startup with `spring.context.exit=onRefresh` to warm the application context
 4. Generates the AOT cache file (`app.aot`) using `-XX:AOTCacheOutput`
