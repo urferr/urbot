@@ -20,8 +20,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.api.OpenAiApi;
+import com.embabel.agent.api.common.Ai;
+import com.embabel.agent.api.common.AiBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -70,6 +70,9 @@ class ConversationEvalIT {
 
     @Autowired
     private IncrementalPropositionExtraction extraction;
+
+    @Autowired
+    private AiBuilder aiBuilder;
 
     private UrbotUser testUser;
 
@@ -122,12 +125,7 @@ class ConversationEvalIT {
 
         // -- Phase 3: Score with LLM judge --
         logger.info("=== Phase 3: LLM-as-judge scoring ===");
-        var apiKey = System.getenv("OPENAI_API_KEY");
-        assertNotNull(apiKey, "OPENAI_API_KEY must be set for LLM-as-judge scoring");
-        var scoringChatModel = OpenAiChatModel.builder()
-                .openAiApi(new OpenAiApi.Builder().apiKey(apiKey).build())
-                .build();
-        var scorer = new TranscriptScorer(scoringChatModel, new JinjavaTemplateRenderer());
+        var scorer = new TranscriptScorer(aiBuilder.ai(), new JinjavaTemplateRenderer());
 
         var scores = scorer.scoreConversation(config.tasks(), config.facts(), evalTranscript);
 
