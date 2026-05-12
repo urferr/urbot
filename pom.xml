@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.10</version>
+        <version>3.5.14</version>
         <relativePath/>
     </parent>
     <groupId>com.embabel</groupId>
@@ -18,8 +18,9 @@
 
     <properties>
         <java.version>21</java.version>
-        <embabel-agent.version>0.3.5-SNAPSHOT</embabel-agent.version>
-        <vaadin.version>24.6.4</vaadin.version>
+        <embabel-agent.version>0.5.0</embabel-agent.version>
+        <embabel-agent-experimental.version>0.5.0-SNAPSHOT</embabel-agent-experimental.version>
+        <vaadin.version>24.10.4</vaadin.version>
     </properties>
 
     <dependencyManagement>
@@ -55,6 +56,12 @@
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-rag-neo-drivine</artifactId>
             <version>0.1.2-SNAPSHOT</version>
+        </dependency>
+        <!-- Override rag-core version: neo-drivine needs 0.5.0-SNAPSHOT for EmbeddingAwareChunkingContentElementRepository -->
+        <dependency>
+            <groupId>com.embabel.agent</groupId>
+            <artifactId>embabel-agent-rag-core</artifactId>
+            <version>0.5.0</version>
         </dependency>
 
         <!-- DICE Semantic Memory -->
@@ -99,13 +106,6 @@
             <artifactId>vaadin-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- Markdown rendering for chat messages -->
-        <dependency>
-            <groupId>org.commonmark</groupId>
-            <artifactId>commonmark</artifactId>
-            <version>0.24.0</version>
-        </dependency>
-
         <!-- Testing -->
         <dependency>
             <groupId>com.embabel.agent</groupId>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-eval</artifactId>
-            <version>${embabel-agent.version}</version>
+            <version>${embabel-agent-experimental.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -149,10 +149,31 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-maven-plugin</artifactId>
+                <version>${vaadin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <jvmArguments>--enable-native-access=ALL-UNNAMED</jvmArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <testExcludes>
+                        <testExclude>**/*IT.java</testExclude>
+                    </testExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -168,6 +189,26 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>production</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-maven-plugin</artifactId>
+                        <version>${vaadin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>build-frontend</goal>
+                                </goals>
+                                <phase>compile</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>openai-models</id>
             <activation>

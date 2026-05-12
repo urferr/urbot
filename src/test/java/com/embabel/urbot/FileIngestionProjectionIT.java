@@ -1,10 +1,16 @@
 package com.embabel.urbot;
 
-import com.embabel.agent.rag.service.NamedEntityDataRepository;
-import com.embabel.dice.proposition.Proposition;
-import com.embabel.urbot.proposition.extraction.IncrementalPropositionExtraction;
-import com.embabel.urbot.proposition.persistence.DrivinePropositionRepository;
-import com.embabel.urbot.user.UrbotUser;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.FileInputStream;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
 import org.junit.jupiter.api.AfterEach;
@@ -17,14 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.io.FileInputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.embabel.agent.rag.service.NamedEntityDataRepository;
+import com.embabel.dice.proposition.Proposition;
+import com.embabel.dice.proposition.extraction.IncrementalPropositionExtraction;
+import com.embabel.urbot.proposition.persistence.DrivinePropositionRepository;
+import com.embabel.urbot.user.UrbotUser;
 
 /**
  * Integration test that ingests a file via the "Learn" path (rememberFile),

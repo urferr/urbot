@@ -1,8 +1,7 @@
 package com.embabel.urbot.proposition.persistence;
 
-import com.embabel.dice.incremental.AnalysisBookmark;
-import com.embabel.dice.incremental.ChunkHistoryStore;
-import com.embabel.dice.incremental.ProcessedChunkRecord;
+import java.util.Map;
+
 import org.drivine.manager.CascadeType;
 import org.drivine.manager.GraphObjectManager;
 import org.drivine.manager.PersistenceManager;
@@ -14,7 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
+import com.embabel.dice.incremental.AnalysisBookmark;
+import com.embabel.dice.incremental.BookmarkKey;
+import com.embabel.dice.incremental.ChunkHistoryStore;
+import com.embabel.dice.incremental.HashKey;
+import com.embabel.dice.incremental.ProcessedChunkRecord;
 
 /**
  * Neo4j/Drivine implementation of ChunkHistoryStore for tracking processed chunks.
@@ -35,7 +38,7 @@ public class DrivineChunkHistoryStore implements ChunkHistoryStore {
 
     @Override
     @Nullable
-    public AnalysisBookmark getLastBookmark(@NonNull String sourceId) {
+    public AnalysisBookmark getLastBookmark(@NonNull BookmarkKey key) {
         var query = """
                 MATCH (c:ProcessedChunk {sourceId: $sourceId})
                 RETURN c.sourceId AS sourceId, c.endIndex AS endIndex, c.processedAt AS processedAt
@@ -45,7 +48,7 @@ public class DrivineChunkHistoryStore implements ChunkHistoryStore {
 
         var spec = QuerySpecification
                 .withStatement(query)
-                .bind(Map.of("sourceId", sourceId));
+                .bind(Map.of("sourceId", key.getSourceId()));
 
         try {
             var result = persistenceManager.getOne(spec);
@@ -61,13 +64,13 @@ public class DrivineChunkHistoryStore implements ChunkHistoryStore {
                     java.time.Instant.parse(row.get("processedAt").toString())
             );
         } catch (Exception e) {
-            logger.debug("No bookmark found for source {}: {}", sourceId, e.getMessage());
+            logger.debug("No bookmark found for source {}: {}", key.getSourceId(), e.getMessage());
             return null;
         }
     }
 
     @Override
-    public boolean isProcessed(@NonNull String contentHash) {
+    public boolean isProcessed(@NonNull HashKey key) {
         var query = """
                 MATCH (c:ProcessedChunk {contentHash: $hash})
                 RETURN count(c) > 0 AS exists
@@ -75,7 +78,7 @@ public class DrivineChunkHistoryStore implements ChunkHistoryStore {
 
         var spec = QuerySpecification
                 .withStatement(query)
-                .bind(Map.of("hash", contentHash));
+                .bind(Map.of("hash", key.getContentHash()));
 
         try {
             var result = persistenceManager.getOne(spec);

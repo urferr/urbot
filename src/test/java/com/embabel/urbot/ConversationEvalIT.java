@@ -1,30 +1,9 @@
 package com.embabel.urbot;
 
-import com.embabel.agent.api.channel.MessageOutputChannelEvent;
-import com.embabel.agent.api.channel.OutputChannel;
-import com.embabel.agent.api.channel.OutputChannelEvent;
-import com.embabel.agent.eval.client.MessageRole;
-import com.embabel.agent.eval.support.*;
-import com.embabel.chat.AssistantMessage;
-import com.embabel.chat.Chatbot;
-import com.embabel.chat.Message;
-import com.embabel.chat.UserMessage;
-import com.embabel.common.textio.template.JinjavaTemplateRenderer;
-import com.embabel.dice.proposition.Proposition;
-import com.embabel.dice.proposition.extraction.IncrementalPropositionExtraction;
-import com.embabel.urbot.proposition.persistence.DrivinePropositionRepository;
-import com.embabel.urbot.user.UrbotUser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.module.kotlin.KotlinModule;
-import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.api.OpenAiApi;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +16,41 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import com.embabel.agent.api.channel.MessageOutputChannelEvent;
+import com.embabel.agent.api.channel.OutputChannel;
+import com.embabel.agent.api.channel.OutputChannelEvent;
+import com.embabel.agent.api.common.AiBuilder;
+import com.embabel.agent.eval.client.MessageRole;
+import com.embabel.agent.eval.support.ConversationSeed;
+import com.embabel.agent.eval.support.Seed;
+import com.embabel.agent.eval.support.SubjectiveScores;
+import com.embabel.agent.eval.support.Task;
+import com.embabel.agent.eval.support.TextSeed;
+import com.embabel.agent.eval.support.TimedOpenAiCompatibleMessage;
+import com.embabel.agent.eval.support.TranscriptScorer;
+import com.embabel.chat.AssistantMessage;
+import com.embabel.chat.Chatbot;
+import com.embabel.chat.Message;
+import com.embabel.chat.UserMessage;
+import com.embabel.common.textio.template.JinjavaTemplateRenderer;
+import com.embabel.dice.proposition.Proposition;
+import com.embabel.dice.proposition.extraction.IncrementalPropositionExtraction;
+import com.embabel.urbot.proposition.persistence.DrivinePropositionRepository;
+import com.embabel.urbot.user.UrbotUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.module.kotlin.KotlinModule;
 
 /**
  * Integration test that evaluates urbot conversation quality using LLM-as-judge scoring
@@ -70,6 +83,9 @@ class ConversationEvalIT {
 
     @Autowired
     private IncrementalPropositionExtraction extraction;
+
+    @Autowired
+    private AiBuilder aiBuilder;
 
     private UrbotUser testUser;
 
@@ -122,12 +138,7 @@ class ConversationEvalIT {
 
         // -- Phase 3: Score with LLM judge --
         logger.info("=== Phase 3: LLM-as-judge scoring ===");
-        var apiKey = System.getenv("OPENAI_API_KEY");
-        assertNotNull(apiKey, "OPENAI_API_KEY must be set for LLM-as-judge scoring");
-        var scoringChatModel = OpenAiChatModel.builder()
-                .openAiApi(new OpenAiApi.Builder().apiKey(apiKey).build())
-                .build();
-        var scorer = new TranscriptScorer(scoringChatModel, new JinjavaTemplateRenderer());
+        var scorer = new TranscriptScorer(aiBuilder.ai(), new JinjavaTemplateRenderer());
 
         var scores = scorer.scoreConversation(config.tasks(), config.facts(), evalTranscript);
 
