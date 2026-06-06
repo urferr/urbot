@@ -18,13 +18,20 @@
 
     <properties>
         <java.version>21</java.version>
-        <embabel-agent.version>0.3.5</embabel-agent.version>
-        <embabel-agent-experimental.version>0.3.4-SNAPSHOT</embabel-agent-experimental.version>
+        <embabel-agent.version>0.4.0</embabel-agent.version>
+        <embabel-agent-experimental.version>0.4.0-SNAPSHOT</embabel-agent-experimental.version>
         <vaadin.version>24.6.4</vaadin.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.embabel.agent</groupId>
+                <artifactId>embabel-agent-dependencies</artifactId>
+                <version>${embabel-agent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
@@ -41,14 +48,13 @@
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-starter</artifactId>
-            <version>${embabel-agent.version}</version>
         </dependency>
 
         <!-- Drivine for Neo4j persistence -->
         <dependency>
             <groupId>org.drivine</groupId>
             <artifactId>drivine4j-spring-boot-starter</artifactId>
-            <version>0.0.14</version>
+            <version>0.0.38</version>
         </dependency>
 
         <!-- RAG with Neo4j/Drivine backend -->
@@ -57,11 +63,11 @@
             <artifactId>embabel-agent-rag-neo-drivine</artifactId>
             <version>0.1.2-SNAPSHOT</version>
         </dependency>
-        <!-- Override rag-core version: neo-drivine needs 0.4.0-SNAPSHOT for EmbeddingAwareChunkingContentElementRepository -->
+
+        <!-- RAG core APIs used directly by the app -->
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-rag-core</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
         </dependency>
 
         <!-- DICE Semantic Memory -->
@@ -87,7 +93,6 @@
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-rag-tika</artifactId>
-            <version>${embabel-agent.version}</version>
         </dependency>
 
         <!-- Web and Vaadin -->
@@ -110,7 +115,6 @@
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-test</artifactId>
-            <version>${embabel-agent.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -124,14 +128,12 @@
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-starter-ollama</artifactId>
-            <version>${embabel-agent.version}</version>
         </dependency>
 
         <!-- For full timeout control -->
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-netty-client-autoconfigure</artifactId>
-            <version>${embabel-agent.version}</version>
         </dependency>
 
         <dependency>
@@ -220,7 +222,6 @@
                 <dependency>
                     <groupId>com.embabel.agent</groupId>
                     <artifactId>embabel-agent-starter-openai</artifactId>
-                    <version>${embabel-agent.version}</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -235,7 +236,6 @@
                 <dependency>
                     <groupId>com.embabel.agent</groupId>
                     <artifactId>embabel-agent-starter-anthropic</artifactId>
-                    <version>${embabel-agent.version}</version>
                 </dependency>
             </dependencies>
         </profile>
