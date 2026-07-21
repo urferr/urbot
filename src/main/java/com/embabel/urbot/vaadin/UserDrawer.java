@@ -84,7 +84,8 @@ public class UserDrawer extends Div {
         // Create documents panel, memory section, and entities section early (referenced by context change listeners)
         documentsPanel = new DocumentsPanel(documentService,
                 user::effectiveContext,
-                (is, fn) -> documentService.ingestStream(is, "upload://" + fn, fn, personalContext),
+                // fromOrg (provenance) is not yet threaded into DocumentService; ignored for now.
+                (is, fn, fromOrg) -> documentService.ingestStream(is, "upload://" + fn, fn, personalContext),
                 url -> documentService.ingestUrl(url, personalContext),
                 onDocumentsChanged);
         memorySection = new MemorySection(propositionRepository, entityResolver,

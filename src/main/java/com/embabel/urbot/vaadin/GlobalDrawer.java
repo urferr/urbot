@@ -78,7 +78,8 @@ public class GlobalDrawer extends Div {
 
         documentsPanel = new DocumentsPanel(documentService,
                 () -> DocumentService.Context.GLOBAL_CONTEXT,
-                (is, fn) -> documentService.ingestStream(is, "upload://" + fn, fn, globalContext),
+                // fromOrg (provenance) is not yet threaded into DocumentService; ignored for now.
+                (is, fn, fromOrg) -> documentService.ingestStream(is, "upload://" + fn, fn, globalContext),
                 url -> documentService.ingestUrl(url, globalContext),
                 onDocumentsChanged);
 

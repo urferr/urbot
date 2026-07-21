@@ -236,9 +236,9 @@ public class DrivinePropositionRepository implements PropositionRepository {
             whereConditions.add("p.contextId = $contextId");
             params.put("contextId", query.getContextIdValue());
         }
-        if (query.getStatus() != null) {
-            whereConditions.add("p.status = $status");
-            params.put("status", query.getStatus().name());
+        if (query.getStatuses() != null && !query.getStatuses().isEmpty()) {
+            whereConditions.add("p.status IN $statuses");
+            params.put("statuses", query.getStatuses().stream().map(Enum::name).toList());
         }
         if (query.getMinLevel() != null) {
             whereConditions.add("p.level >= $minLevel");
@@ -378,7 +378,7 @@ public class DrivinePropositionRepository implements PropositionRepository {
         // Over-fetch from the vector index to compensate for post-filter losses
         // (contextId, status, etc. are applied after the vector search)
         boolean hasPostFilters = query.getContextIdValue() != null
-                || query.getStatus() != null
+                || (query.getStatuses() != null && !query.getStatuses().isEmpty())
                 || query.getMinLevel() != null
                 || query.getMaxLevel() != null;
         int vectorTopK = hasPostFilters
@@ -395,9 +395,9 @@ public class DrivinePropositionRepository implements PropositionRepository {
             whereConditions.add("p.contextId = $contextId");
             params.put("contextId", query.getContextIdValue());
         }
-        if (query.getStatus() != null) {
-            whereConditions.add("p.status = $status");
-            params.put("status", query.getStatus().name());
+        if (query.getStatuses() != null && !query.getStatuses().isEmpty()) {
+            whereConditions.add("p.status IN $statuses");
+            params.put("statuses", query.getStatuses().stream().map(Enum::name).toList());
         }
         if (query.getMinLevel() != null) {
             whereConditions.add("p.level >= $minLevel");

@@ -1,7 +1,9 @@
 package com.embabel.urbot.proposition.persistence;
 
 import com.embabel.dice.incremental.AnalysisBookmark;
+import com.embabel.dice.incremental.BookmarkKey;
 import com.embabel.dice.incremental.ChunkHistoryStore;
+import com.embabel.dice.incremental.HashKey;
 import com.embabel.dice.incremental.ProcessedChunkRecord;
 import org.drivine.manager.CascadeType;
 import org.drivine.manager.GraphObjectManager;
@@ -35,7 +37,11 @@ public class DrivineChunkHistoryStore implements ChunkHistoryStore {
 
     @Override
     @Nullable
-    public AnalysisBookmark getLastBookmark(@NonNull String sourceId) {
+    public AnalysisBookmark getLastBookmark(@NonNull BookmarkKey key) {
+        // Note: keyed by sourceId only. The dice ContextId on the key is a Kotlin value class whose
+        // getter is name-mangled and unreachable from Java, and ProcessedChunk nodes carry no contextId,
+        // so this store is not context-scoped (unchanged from prior behaviour).
+        var sourceId = key.getSourceId();
         var query = """
                 MATCH (c:ProcessedChunk {sourceId: $sourceId})
                 RETURN c.sourceId AS sourceId, c.endIndex AS endIndex, c.processedAt AS processedAt
@@ -67,7 +73,8 @@ public class DrivineChunkHistoryStore implements ChunkHistoryStore {
     }
 
     @Override
-    public boolean isProcessed(@NonNull String contentHash) {
+    public boolean isProcessed(@NonNull HashKey key) {
+        var contentHash = key.getContentHash();
         var query = """
                 MATCH (c:ProcessedChunk {contentHash: $hash})
                 RETURN count(c) > 0 AS exists
